@@ -1,0 +1,61 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Payment Processor Demo v2</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>body{font-family:system-ui,Arial;margin:20px;max-width:900px}input,button{padding:8px;margin:4px}pre{background:#f3f3f3;padding:8px}</style>
+</head>
+<body>
+  <h1>Payment Processor Demo v2 — Sandbox</h1>
+  <p><strong>Warning:</strong> This is a local demo. Do NOT use real card data here unless you understand PCI obligations.</p>
+
+  <div style="border:1px solid #ddd;padding:12px;margin-bottom:12px;border-radius:6px">
+    <h3>Create Merchant (demo)</h3>
+    <input id="mname" placeholder="Merchant name"> <input id="memail" placeholder="email">
+    <button onclick="createMerchant()">Create Merchant</button>
+    <pre id="merchantResp"></pre>
+  </div>
+
+  <div style="border:1px solid #ddd;padding:12px;margin-bottom:12px;border-radius:6px">
+    <h3>Tokenize Card (demo)</h3>
+    <input id="card" placeholder="Card number (e.g. 4242 4242 4242 4242)">
+    <input id="exp_month" placeholder="MM">
+    <input id="exp_year" placeholder="YYYY">
+    <button onclick="tokenize()">Tokenize</button>
+    <pre id="tokenResp"></pre>
+  </div>
+
+  <div style="border:1px solid #ddd;padding:12px;margin-bottom:12px;border-radius:6px">
+    <h3>Create Charge (demo) — requires Merchant API key (JWT)</h3>
+    <input id="api_key" placeholder="merchant api_key (JWT)">
+    <input id="token" placeholder="token">
+    <input id="amount" placeholder="amount in cents">
+    <button onclick="createCharge()">Charge</button>
+    <pre id="chargeResp"></pre>
+  </div>
+
+<script>
+async function createMerchant(){
+  const name = document.getElementById('mname').value;
+  const email = document.getElementById('memail').value;
+  const r = await fetch('/api/merchants', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,email})});
+  document.getElementById('merchantResp').innerText = await r.text();
+}
+async function tokenize(){
+  const card = document.getElementById('card').value;
+  const exp_month = document.getElementById('exp_month').value;
+  const exp_year = document.getElementById('exp_year').value;
+  const r = await fetch('/api/tokenize',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({card_number:card,exp_month,exp_year})});
+  document.getElementById('tokenResp').innerText = await r.text();
+}
+async function createCharge(){
+  const api_key = document.getElementById('api_key').value;
+  const token = document.getElementById('token').value;
+  const amount_cents = parseInt(document.getElementById('amount').value||'0');
+  const r = await fetch('/api/charges',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+api_key},body:JSON.stringify({token,amount_cents})});
+  document.getElementById('chargeResp').innerText = await r.text();
+}
+</script>
+</body>
+</html>
